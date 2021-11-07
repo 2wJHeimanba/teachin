@@ -21,7 +21,6 @@ import Home from "./view/Home.vue"
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  border: 2px solid #fff;
   height: 100vh;
 }
 body{

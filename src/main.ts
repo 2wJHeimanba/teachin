@@ -1,5 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
+import "./assets/css/popcss.css"
+import router from "./router"
 // import "./mockjs"
 
 // 设置rem
@@ -21,5 +23,5 @@ window.addEventListener("resize",()=>{
 });
 
 const app=createApp(App);
-
+app.use(router);
 app.mount('#app');
