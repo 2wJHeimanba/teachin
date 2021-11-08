@@ -1,15 +1,7 @@
 <template>
   <div class="pc">
     <div class="pc-header">
-      <div class="pc-header-box">
-        <div class="pc-header-logo"></div>
-        <div class="pc-header-link">
-          <el-button type="warning" plain @click="changeData('pc-list')">pc-list</el-button>
-        </div>
-        <div class="pc-header-info">
-          <el-button type="success" plain @click="changeData('pc-about')">pc-about</el-button>
-        </div>
-      </div>
+      <PCHeader />
     </div>
     <div class="pc-content">
       <div class="pc-content-nav">
@@ -32,14 +24,16 @@
         </div>
         <div class="pc-nav-list">
           <el-scrollbar>
-            <p v-for="item in 80" :key="item" class="scrollbar-demo-item">{{ item }}</p>
+            <ul class="pc-school-ul" v-for="(item,index) in data.school_list" :key="index">
+              <li class="pc-school-list b-flex" @click="selectedSchool(item)">{{item.SchoolName}}</li>
+            </ul>
           </el-scrollbar>
         </div>
       </div>
       <div class="pc-content-box">
         <el-scrollbar>
           <transition name="fade" mode="out-in">
-            <component :is="componentBox"></component>
+            <component :is="componentBox" @outputTeachinId="outputTeachinId"></component>
           </transition>
         </el-scrollbar>
       </div>
@@ -48,11 +42,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref,reactive,onMounted,shallowRef,defineAsyncComponent,watch } from "vue"
+import PCHeader from "../components/PCHeader.vue"
+import { ref,reactive,onMounted,shallowRef,defineAsyncComponent,watch,onBeforeMount,provide } from "vue"
+import axios from "axios"
 
 const data = reactive({
     childComponetName:"pc-list",
-    age:23
+    age:23,
+    school_list:[],
+    currentSchoolId:'',
+    currentSchoolName:'',
+    currentCompanyId:'',
+    currentCompanyName:''
 });
 const options=ref<any>([
   {value: 'HTML',label: 'HTML'},
@@ -62,28 +63,50 @@ const options=ref<any>([
 const value=ref([]);
 const componentBox=shallowRef(defineAsyncComponent(()=>import('./PCList.vue')));
 
+const dataBox={
+  currentSchoolId:'',
+  currentCompanyId:'',
+}
+
 watch(()=>data.childComponetName,(newVal,oldVal)=>{
-  console.log(newVal)
   if(newVal=='pc-list'){
     componentBox.value=defineAsyncComponent(()=>import('./PCList.vue'))
   }else{
     componentBox.value=defineAsyncComponent(()=>import('./PCAbout.vue'))
   }
 });
-
-onMounted(()=>{
-  console.log("PCHome页面加载")
+onBeforeMount(() => {
+  axios.get("/api/schools").then(res=>data.school_list=res.data.data)
 });
 
-const changeData=(val:string):void=>{
-  data.childComponetName=val
+window.addEventListener('beforeunload',function(){
+  console.log("-------------------")
+});
+
+
+// 状态管理
+provide('stateBox',dataBox);
+
+onMounted(()=>{
+  // console.log("PCHome页面加载",import.meta.env.VITE_APP_BASE_API)
+});
+
+// 选择学校
+const selectedSchool=(item:any):void=>{
+  componentBox.value=defineAsyncComponent(()=>import('./PCList.vue'))
+}
+
+// 选件会列表抛出的宣讲会id
+const outputTeachinId=(item:any):void=>{
+  dataBox.currentCompanyId=item.value;
+  componentBox.value=defineAsyncComponent(()=>import('./PCAbout.vue'));
 }
 
 </script>
 
 <style scoped>
 .pc{
-  padding-top: 0.42rem;
+  padding-top: 0.32rem;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -92,50 +115,35 @@ const changeData=(val:string):void=>{
   /* max-width: 1440px; */
   min-width: 1280px;
   width: 10rem;
-  height: 0.42rem;
+  height: 0.32rem;
   position: fixed;
   top: 0;left: 0;
+  background: #2b3d5e;
 }
-.pc-header-box{
-  max-width: 1440px;
-  min-width: 1280px;
-  width: 100%;
-  height: 100%;
-  margin: 0 auto;
-  display: flex;
-
-}
-.pc-header-logo{
-  width: 1.25rem;
-  /* border: 1px solid #fff; */
-}
-.pc-header-link{
-  flex-grow: 1;
-  /* border: 1px solid #fff; */
-}
-.pc-header-info{
-  width: 1.25rem;
-  /* border: 1px solid #fff; */
-}
-
-
 
 .pc-content{
-  max-width: 1440px;
-  min-width: 1280px;
-  width: 100%;
-  /* border: 1px solid #fff; */
   margin: 0 auto;
   display: flex;
   flex-grow: 1;
 }
+/* 根据屏幕大小调整 */
+@media screen and (min-width:769px) {
+  .pc-content{width: 100%;}
+}
+@media screen and (min-width:1440px) {
+  .pc-content{width: 9rem;}
+}
+@media screen and (min-width:1600px) {
+  .pc-content{width: 7.6rem;}
+}
+
 .pc-content-nav{
   width: 1.25rem;
   display: flex;
   flex-direction: column;
+  background: #222;
 }
 .pc-nav-search{
-  /* border: 1px solid #fff; */
   height: 0.3rem;
   width: 100%;
   display: flex;
@@ -145,31 +153,57 @@ const changeData=(val:string):void=>{
 
 .pc-nav-list{
   flex-grow: 1;
-  /* border: 1px solid #fff; */
   height: calc(100vh - 0.72rem);
   overflow-y: auto;
+  padding: 0 0.038rem;
+}
+.pc-nav-list .el-scrollbar{
+  /* border: 2px solid #fff; */
+  /* width: 100%; */
+}
+.pc-school-list{
+  color: #fff;
+  justify-content: flex-start;
+  height: 0.22rem;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 0.06rem;
+  margin-bottom: 3px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 5px;
+  user-select: none;
+}
+.pc-school-list:hover{
+  background: rgba(255,255,255,0.25);
+}
+.pc-school-ul{
+  width: 100%;
+  list-style: none;
 }
 
 
 /* 内容框样式 */
 .pc-content-box{
-  /* border: 1px solid #fff; */
   flex-grow: 1;
-  height: calc(100vh - 0.42rem);
-  /* background: orange; */
+  height: calc(100vh - 0.32rem);
   overflow-y: auto;
 }
 .pc-content-test{
-  /* height: 9rem; */
   width: 2rem;
-  /* background: cyan; */
   overflow-y: auto;
 }
 p{
-  height: 30px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 5px;
+  margin-right: 8px;
+  margin-left: 8px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 5px;
 }
 .fade-enter-active,.fade-leave-active {
   transition: opacity 0.2s linear;

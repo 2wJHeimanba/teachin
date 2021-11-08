@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import "./assets/css/popcss.css"
 import router from "./router"
-// import "./mockjs"
+import "./mockjs"
 
 // 设置rem
 let equipmentWidth=window.innerWidth;

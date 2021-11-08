@@ -1,46 +1,223 @@
 <template>
   <div class="pc-list">
-      <div class="pc-list-header"></div>
-      <div class="pc-list-content"></div>
-      <div class="pc-list-advertise"></div>
-      <div class="pc-list-footer"></div>
+      <div class="pc-list-header">
+          <div class="pc-search-left">
+              <div class="pc-search-title">
+                  <h2>宣讲会查询系统</h2>&nbsp;&nbsp;
+                  <span>全国重点高校就业办官方“就业信息网”的全部宣讲会信息</span>
+              </div>
+              <div class="pc-search-ipt">
+                  <input type="text" class="no-border-outline" placeholder="输入关键词搜索">
+                  <el-date-picker v-model="select_date" type="date" placeholder="全部"></el-date-picker>
+                  <button class="no-border-outline">搜索宣讲会</button>
+              </div>
+          </div>
+          <div class="pc-search-right b-flex">
+              <QrCode />
+          </div>
+      </div>
+      <div class="pc-list-content">
+          <div class="pc-teachin-box">
+              <div class="pc-teachin-title b-flex-align">全部宣讲会信息</div>
+              <div class="pc-teachin-list">
+                  <ul>
+                      <li>公司标题</li>
+                      <li>举办时间</li>
+                      <li>举办院校</li>
+                      <li>举办地点</li>
+                      <li>点击量</li>
+                      <li>操作</li>
+                      <li>报名</li>
+                  </ul>
+                  <ul v-for="(item,index) in data.teachin_list" :key="index">
+                      <li @click="toDetail(item)">{{item.ExCMPName}}</li>
+                      <li>{{item.ExDate}}</li>
+                      <li>{{item.ExSchName}}</li>
+                      <li>{{item.ExSpaName}}</li>
+                      <li>{{item.ExPageView}}</li>
+                      <li>投简历</li>
+                      <li><el-button type="primary" plain size="mini">报名</el-button></li>
+                  </ul>
+              </div>
+              <div class="pc-teachin-pagination b-flex-align">
+                  <el-pagination layout="prev, pager, next" :total="1000"></el-pagination>
+              </div>
+          </div>
+      </div>
+      <div class="pc-list-advertise">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+      </div>
+      <div class="pc-footer b-flex">
+          <span>Copyright © 1998 - 2021 51Job. All Rights Reserved.</span>
+          <span>未经51Job同意，不得转载本网站之所有招聘信息及作品 | 无忧工作网版权所有©1999-2021</span>
+      </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {reactive} from "vue"
+import QrCode from "../components/QrCode.vue"
+import {reactive,watch,onBeforeMount,defineEmits,ref} from "vue"
+import axios from "axios"
 const data=reactive({
-    name:"pc-list"
-})
+    name:"pc-list",
+    teachin_list:[]
+});
+const select_date=ref<string>('');
+const emit=defineEmits(['outputTeachinId']);
+onBeforeMount(() => {
+    axios.get('/api/info').then(res=>{
+        data.teachin_list=res.data.data
+    })
+});
+watch(() => data.select_date,(newVal,oldVal):void=>{
+    console.log(newVal)
+});
+const toDetail=(item:any):void=>{
+    emit('outputTeachinId',{value:item.ExPKID,label:item.ExCMPName});
+}
 </script>
 
 <style scoped>
 .pc-list{
-    /* border: 1px solid #fff; */
     width: 100%;
-    /* height: 5rem; */
 }
 .pc-list>div{
-    background:rgba(255,255,255,0.15);
-    height: 2rem;
-    border-radius:8px;
-    margin: 8px;
-    margin-right: 15px;
+    margin-bottom: 0.07rem;
+}
+.pc-list>div:last-child{
+    margin-bottom: 0;
 }
 /* 顶部搜索框样式 */
 .pc-list-header{
-
+    height: 0.78rem;
+    display: flex;
+    padding-left: 0.15rem;
+    background:rgba(255,255,255,0.15);  
 }
+.pc-list-header>div{}
+.pc-search-left{
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding-right: 0.15rem;
+}
+.pc-search-left>div{
+    width: 100%;
+}
+.pc-search-title{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
+}
+.pc-search-title>span{
+    font-size: 0.06rem;
+}
+.pc-search-ipt{
+    margin-top: 0.03rem;
+    border: 9px solid rgba(255,255,255,0.15);
+    border-radius: 5px;
+    display: flex;
+    background: rgba(255,255,255,0.15);
+}
+.pc-search-ipt>input[type='text']{
+    height: 100%;
+    flex-grow: 1;
+    padding: 0 0.2rem;
+}
+.pc-search-ipt>button{
+    width: 0.61rem;
+    background: #4169e1;
+    color: #fff;
+    border-radius: 0 5px 5px 0;
+}
+.pc-search-right{
+    width: 1.7rem;
+    position: relative;
+    padding-left: 0.15rem;
+    padding-right: 0.05rem;
+}
+.pc-search-right::before{
+    position: absolute;
+    content: "";
+    top: 0.1rem;bottom: 0.1rem;left: 0;
+    background: rgba(255,255,255,0.15);
+    width: 1px;
+    transform: scaleX(0.5);
+}
+
 /* 列表样式 */
-.pc-list-content{
-
+.pc-list-content,
+.pc-list-advertise{
+    padding: 0.07rem;
 }
+.pc-list-content{}
+
+.pc-teachin-box{
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.pc-teachin-box>div{
+    padding: 0 0.05rem;
+}
+.pc-teachin-title{
+    height: 0.28rem;
+    border-bottom: 1px solid rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.1);    
+}
+.pc-teachin-list{
+    flex-grow: 1;
+}
+.pc-teachin-list>ul{
+    display: flex;
+    height: 0.28rem;
+    display: flex;
+    align-items: center;
+    list-style: none;
+}
+.pc-teachin-list>ul>li:nth-child(1){flex: 4 1;cursor: pointer;}
+.pc-teachin-list>ul>li:nth-child(2){flex: 4 1;}
+.pc-teachin-list>ul>li:nth-child(3){flex: 3 1;}
+.pc-teachin-list>ul>li:nth-child(4){flex: 3 1;}
+.pc-teachin-list>ul>li:nth-child(5){flex: 1 1;}
+.pc-teachin-list>ul>li:nth-child(6){flex: 1 1;}
+.pc-teachin-list>ul>li:nth-child(7){flex: 1 1;}
+.pc-teachin-list>ul>li:nth-child(-n+4){text-align: left;}
+.pc-teachin-list>ul:not(:last-child){border-bottom: 1px solid rgba(255,255,255,0.35);}
+.pc-teachin-list>ul:not(:first-child):hover{background: rgba(255,255,255,0.06);}
+.pc-teachin-pagination{
+    height: 0.28rem;
+    border-top: 1px solid rgba(255,255,255,0.35);
+    justify-content: flex-end;
+}
+.pc-teachin-pagination >>> .el-pagination .btn-next,
+.pc-teachin-pagination >>> .el-pagination .btn-prev{
+    background: transparent;
+}
+.pc-teachin-pagination >>> .el-pager li{
+    background: transparent;
+}
+
 /* 广告位样式 */
 .pc-list-advertise{
-
+    height: 0.9rem;
+    display: flex;
 }
-/* 底部版权样式 */
-.pc-list-footer{
-
+.pc-list-advertise>div{
+    border: 1px solid rgba(255,255,255,0.15);
+    flex: 1 1;
+    border-radius: 8px;
+    margin: 0 5px;
 }
+.pc-list-advertise>div:last-child{margin-right: 0;}
+.pc-list-advertise>div:first-child{margin-left: 0;}
 </style>
