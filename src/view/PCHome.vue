@@ -25,7 +25,7 @@
         <div class="pc-nav-list">
           <el-scrollbar>
             <ul class="pc-school-ul" v-for="(item,index) in data.school_list" :key="index">
-              <li class="pc-school-list b-flex" @click="selectedSchool(item)">{{item.SchoolName}}</li>
+              <li class="pc-school-list b-flex" @click="selectedSchool(item)"><span>{{item.SchoolName}}</span></li>
             </ul>
           </el-scrollbar>
         </div>
@@ -132,17 +132,21 @@ const outputTeachinId=(item:any):void=>{
 }
 @media screen and (min-width:1440px) {
   .pc-content{width: 9rem;}
+  .pc-content-nav{
+    width: 1.4rem !important;
+  }
 }
 @media screen and (min-width:1600px) {
   .pc-content{width: 7.6rem;}
 }
 
 .pc-content-nav{
-  width: 1.25rem;
+  width: 1.5rem;
   display: flex;
   flex-direction: column;
   background: #222;
 }
+
 .pc-nav-search{
   height: 0.3rem;
   width: 100%;
@@ -155,34 +159,35 @@ const outputTeachinId=(item:any):void=>{
   flex-grow: 1;
   height: calc(100vh - 0.72rem);
   overflow-y: auto;
-  padding: 0 0.038rem;
 }
-.pc-nav-list .el-scrollbar{
-  /* border: 2px solid #fff; */
-  /* width: 100%; */
-}
+.pc-nav-list .el-scrollbar{}
 .pc-school-list{
   color: #fff;
   justify-content: flex-start;
-  height: 0.22rem;
-  width: 100%;
+  height: 0.25rem;
+  padding: 0 0.06rem;
+  margin-bottom: 3px;
+  user-select: none;
+  padding: 0 0.06rem;
+}
+.pc-school-list>span{
+  display: block;
+  width: 100%;height: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 0 0.06rem;
-  margin-bottom: 3px;
-  background: rgba(255,255,255,0.08);
+  /* background: rgba(255,255,255,0.08); */
   border-radius: 5px;
-  user-select: none;
+  line-height: 0.25rem;
+  padding: 0 0.012rem;
 }
-.pc-school-list:hover{
+.pc-school-list>span:hover{
   background: rgba(255,255,255,0.25);
 }
 .pc-school-ul{
   width: 100%;
   list-style: none;
 }
-
 
 /* 内容框样式 */
 .pc-content-box{
@@ -193,17 +198,6 @@ const outputTeachinId=(item:any):void=>{
 .pc-content-test{
   width: 2rem;
   overflow-y: auto;
-}
-p{
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 5px;
-  margin-right: 8px;
-  margin-left: 8px;
-  background: rgba(255,255,255,0.15);
-  border-radius: 5px;
 }
 .fade-enter-active,.fade-leave-active {
   transition: opacity 0.2s linear;

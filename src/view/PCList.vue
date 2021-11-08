@@ -83,6 +83,7 @@ const toDetail=(item:any):void=>{
 <style scoped>
 .pc-list{
     width: 100%;
+    /* font-size: 0.075rem; */
 }
 .pc-list>div{
     margin-bottom: 0.07rem;

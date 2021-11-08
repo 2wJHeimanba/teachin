@@ -12,7 +12,12 @@
               <h2>广东省农村信用社联合社</h2>
               <span>报名</span>
             </div>
-            <div class="pc-about-teachin-info"></div>
+            <div class="pc-about-teachin-info">
+              <div>来源高校：中山大学（东校区）</div>
+              <div>举办地点：行政楼B座多功能厅B101</div>
+              <div>宣讲时间：2021-11-08</div>
+              <div>发布时间：2021-11-04 10:27:00</div>
+            </div>
           </div>
         </div>
       </div>
@@ -86,7 +91,7 @@ onMounted(() => {
   height: 0.43rem;
 }
 .pc-about-header-box{
-  border: 1px solid red;
+  /* border: 1px solid red; */
   position: absolute;
   bottom: 0.1rem;
   left: 0.1rem;
@@ -95,10 +100,10 @@ onMounted(() => {
   display: flex;
 }
 .pc-about-header-box>div{
-  border: 1px solid blue;
+  /* border: 1px solid blue; */
 }
 .pc-about-logo{
-  width: 0.75rem;
+  width: 1rem;
 }
 .pc-about-info{
   flex-grow: 1;
@@ -106,13 +111,25 @@ onMounted(() => {
   flex-direction: column;
 }
 .pc-company-name{
-  border: 1px solid cyan;
+  /* border: 1px solid cyan; */
   flex-grow: 1;
   padding-bottom: 0.04rem;
 }
 .pc-about-teachin-info{
-  border: 1px solid red;
+  /* border: 1px solid red; */
   height: 0.43rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+}
+.pc-about-teachin-info>div{
+  /* border: 1px solid red; */
+  width: 50%;
+  height: 0.16rem;
+  color: #000;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 
