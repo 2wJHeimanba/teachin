@@ -22,7 +22,7 @@ import Home from "./view/Home.vue"
   /* text-align: center; */
   color: #2c3e50;
   height: 100vh;
-  font-size: 0.09rem;
+  font-size: 0.08rem;
 }
 body{
   background: #333;

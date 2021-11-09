@@ -8,7 +8,7 @@
               </div>
               <div class="pc-search-ipt">
                   <input type="text" class="no-border-outline" placeholder="输入关键词搜索">
-                  <el-date-picker v-model="select_date" type="date" placeholder="全部"></el-date-picker>
+                  <!-- <el-date-picker v-model="select_date" type="date" placeholder="全部"></el-date-picker> -->
                   <button class="no-border-outline">搜索宣讲会</button>
               </div>
           </div>
@@ -19,7 +19,11 @@
       <div class="pc-list-content">
           <div class="pc-teachin-box">
               <div class="pc-teachin-title b-flex-align">全部宣讲会信息</div>
-              <div class="pc-teachin-list">
+              <div class="pc-teachin-list" 
+                v-loading="props.loading" 
+                element-loading-text="Loading..."
+                element-loading-background="rgba(0, 0, 0, 0.5)"
+              >
                   <ul>
                       <li>公司标题</li>
                       <li>举办时间</li>
@@ -29,7 +33,7 @@
                       <li>操作</li>
                       <li>报名</li>
                   </ul>
-                  <ul v-for="(item,index) in data.teachin_list" :key="index">
+                  <ul v-for="(item,index) in props.teachinList" :key="index" class="pc-teacin-list">
                       <li @click="toDetail(item)">{{item.ExCMPName}}</li>
                       <li>{{item.ExDate}}</li>
                       <li>{{item.ExSchName}}</li>
@@ -40,7 +44,7 @@
                   </ul>
               </div>
               <div class="pc-teachin-pagination b-flex-align">
-                  <el-pagination layout="prev, pager, next" :total="1000"></el-pagination>
+                  <el-pagination layout="prev, pager, next" :total="props.totalPages" @current-change="changePagination"></el-pagination>
               </div>
           </div>
       </div>
@@ -59,31 +63,37 @@
 
 <script setup lang="ts">
 import QrCode from "../components/QrCode.vue"
-import {reactive,watch,onBeforeMount,defineEmits,ref} from "vue"
-import axios from "axios"
+import {reactive,watch,onBeforeMount,defineEmits,ref,defineProps,onMounted} from "vue"
 const data=reactive({
-    name:"pc-list",
-    teachin_list:[]
+    name:"pc-list"
 });
 const select_date=ref<string>('');
-const emit=defineEmits(['outputTeachinId']);
-onBeforeMount(() => {
-    axios.get('/api/info').then(res=>{
-        data.teachin_list=res.data.data
-    })
-});
-watch(() => data.select_date,(newVal,oldVal):void=>{
-    console.log(newVal)
-});
+const props=defineProps<{
+    teachinList:any,
+    totalPages:any,
+    loading:boolean
+}>();
+
+// onMounted(()=>{
+//     console.log(props.totalPages)
+// })
+
+// 接收父组件传来的数据
+const emit=defineEmits(['outputTeachinId','outputPagination']);
+
 const toDetail=(item:any):void=>{
     emit('outputTeachinId',{value:item.ExPKID,label:item.ExCMPName});
+}
+
+// 分页数改变
+const changePagination=(val:any)=>{
+    emit('outputPagination',val)
 }
 </script>
 
 <style scoped>
 .pc-list{
     width: 100%;
-    /* font-size: 0.075rem; */
 }
 .pc-list>div{
     margin-bottom: 0.07rem;
@@ -129,6 +139,7 @@ const toDetail=(item:any):void=>{
     height: 100%;
     flex-grow: 1;
     padding: 0 0.2rem;
+    min-height: 0.21rem;
 }
 .pc-search-ipt>button{
     width: 0.61rem;
@@ -177,6 +188,7 @@ const toDetail=(item:any):void=>{
 }
 .pc-teachin-list{
     flex-grow: 1;
+    min-height: 1.5rem;
 }
 .pc-teachin-list>ul{
     display: flex;
@@ -184,6 +196,11 @@ const toDetail=(item:any):void=>{
     display: flex;
     align-items: center;
     list-style: none;
+}
+.pc-teacin-list>li{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .pc-teachin-list>ul>li:nth-child(1){flex: 4 1;cursor: pointer;}
 .pc-teachin-list>ul>li:nth-child(2){flex: 4 1;}
@@ -199,6 +216,8 @@ const toDetail=(item:any):void=>{
     height: 0.28rem;
     border-top: 1px solid rgba(255,255,255,0.35);
     justify-content: flex-end;
+    --el-text-color-primary:#fff;
+    --el-text-color-primary:#fff;
 }
 .pc-teachin-pagination >>> .el-pagination .btn-next,
 .pc-teachin-pagination >>> .el-pagination .btn-prev{

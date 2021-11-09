@@ -48,3 +48,18 @@
     justify-content: flex-start;
     align-items: flex-end;
 }
+
+.pc-company-info-box .el-tabs__item{
+    color: #fff;
+}
+.pc-company-info-box .el-tabs__nav{
+    padding-left: 0.1rem;
+}
+
+.pc-about-right .el-affix{
+    width: 100% !important;
+}
+
+.pc-teacin-list .el-button--primary.is-plain{
+    background: transparent;
+}

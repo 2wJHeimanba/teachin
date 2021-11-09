@@ -41,6 +41,7 @@ a{
 }
 @media screen and (min-width:1600px) {
   .pc-header-box{width: 7.6rem;}
+  .pc-header-logo{width: 1.2rem !important;}
 }
 .pc-header-logo{
   width: 1.5rem;

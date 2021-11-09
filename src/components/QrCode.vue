@@ -31,21 +31,26 @@
 .qr-code-tip{
     flex-direction: column;
 }
-.qr-code-tip>span:first-child{
-    font-size: 0.04rem;
+.qr-code-tip>span{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .qr-code-tip>span:last-child{
-    font-size: 0.04rem;
     background: rgba(255,255,255,0.15);
     padding: 1px 8px;
     border-radius: 8px;
+}
+.qr-code-tip>span:last-child,
+.qr-code-tip>span:first-child{
+    font-size: 0.04rem;
+    transform: scale(0.9);
 }
 .qr-code-tip>span:nth-child(2){
     font-size: 0.08rem;
     margin: 0.025rem 0;
     font-weight: bold;
 }
-.qr-code-image{}
 .qr-code-image>img{
     width: 100%;
     height: 100%;

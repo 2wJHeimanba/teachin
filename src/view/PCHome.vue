@@ -7,14 +7,14 @@
       <div class="pc-content-nav">
         <div class="pc-nav-search">
           <el-select
-            v-model="value"
+            v-model="data.currentAreaId"
             filterable
             allow-create
             default-first-option
-            placeholder="Choose tags for your article"
+            placeholder="地区"
           >
             <el-option
-              v-for="item in options"
+              v-for="item in data.area_list"
               :key="item.value"
               :label="item.label"
               :value="item.value"
@@ -33,7 +33,13 @@
       <div class="pc-content-box">
         <el-scrollbar>
           <transition name="fade" mode="out-in">
-            <component :is="componentBox" @outputTeachinId="outputTeachinId"></component>
+            <component :is="componentBox" 
+              @outputTeachinId="outputTeachinId" 
+              @outputPagination="outputPagination" 
+              :teachinList="data.teachin_list" 
+              :totalPages="data.totalPages" 
+              :loading="data.loading"
+            ></component>
           </transition>
         </el-scrollbar>
       </div>
@@ -44,67 +50,124 @@
 <script setup lang="ts">
 import PCHeader from "../components/PCHeader.vue"
 import { ref,reactive,onMounted,shallowRef,defineAsyncComponent,watch,onBeforeMount,provide } from "vue"
-import axios from "axios"
+import service from "../http"
+import store from "../store"
+import {areaDataType} from "../tools/interface"
 
 const data = reactive({
     childComponetName:"pc-list",
-    age:23,
+    loading:false,
+    teachin_list:[],
     school_list:[],
+    area_list:[],
     currentSchoolId:'',
-    currentSchoolName:'',
     currentCompanyId:'',
-    currentCompanyName:''
+    currentAreaId:'473f08ee-5da7-4311-9031-b987e554fb41',
+    searchKye:'',
+    date:'',
+    page:1,
+    totalPages:1
 });
-const options=ref<any>([
-  {value: 'HTML',label: 'HTML'},
-  {value: 'CSS',label: 'CSS'},
-  {value: 'JavaScript',label: 'JavaScript'}
-]);
-const value=ref([]);
 const componentBox=shallowRef(defineAsyncComponent(()=>import('./PCList.vue')));
 
-const dataBox={
-  currentSchoolId:'',
-  currentCompanyId:'',
-}
+const dataBox=store;
+// 状态管理
+provide('stateBox',dataBox);
 
 watch(()=>data.childComponetName,(newVal,oldVal)=>{
+  let temporaryBox:any;
   if(newVal=='pc-list'){
-    componentBox.value=defineAsyncComponent(()=>import('./PCList.vue'))
+    temporaryBox=defineAsyncComponent(()=>import('./PCList.vue'))
   }else{
-    componentBox.value=defineAsyncComponent(()=>import('./PCAbout.vue'))
+    temporaryBox=defineAsyncComponent(()=>import('./PCAbout.vue'))
+  };
+  componentBox.value=temporaryBox;
+});
+
+// 监听数据变化获取对应的数据
+watch(()=>[data.currentAreaId,data.currentSchoolId],([newAreaId,newSchoolId],[oldAreaId,oldSchoolId])=>{
+  data.page=1;
+  if(newAreaId!==oldAreaId){
+    requestAreaSchools();
+    if(data.currentSchoolId){
+      data.currentSchoolId=''
+    }else{
+      requestData();
+    }
   }
-});
+  if(newSchoolId!==oldSchoolId){
+    componentBox.value=defineAsyncComponent(()=>import('./PCList.vue'));
+    requestData();
+  }
+})
+
+
+
+
 onBeforeMount(() => {
-  axios.get("/api/schools").then(res=>data.school_list=res.data.data)
+  requestAreaSchools();
+  service.post('/Index/GetAreaList').then((res:any):void=>{
+    data.area_list=res.Data.map((item:any):areaDataType=>{
+      return {
+        value:item.AreaPKID,
+        label:item.AreaName
+      }
+    })
+  });
+  requestData();
 });
+
+const requestData=():void=>{
+  data.loading=true;
+  let {currentSchoolId,currentAreaId,searchKye,date,page}=data;
+  service.post(`/Index/GetExecutiveList?areaPKID=${currentAreaId}&schoolPKID=${currentSchoolId}&cmpName=${searchKye}&date=${date}&page=${page}&size=10`).then((res:any):void=>{
+    data.loading=false;
+    data.teachin_list=res.Data;
+    data.totalPages=res.TotalCount;
+  })
+}
+
+const requestAreaSchools=():void=>{
+  service.post(`/Index/GetSchoolList?areaPKID=${data.currentAreaId}`).then((res:any):void=>{
+    data.school_list=res.Data;
+  });
+}
+
+const outputPagination=(e:number):void=>{
+  data.page=e;
+  requestData();
+}
 
 window.addEventListener('beforeunload',function(){
   console.log("-------------------")
 });
 
 
-// 状态管理
-provide('stateBox',dataBox);
+
 
 onMounted(()=>{
+  // console.warn("============",import.meta.env.MODE)
   // console.log("PCHome页面加载",import.meta.env.VITE_APP_BASE_API)
 });
 
 // 选择学校
 const selectedSchool=(item:any):void=>{
-  componentBox.value=defineAsyncComponent(()=>import('./PCList.vue'))
+  data.currentSchoolId=item.SchoolPKID;
 }
 
 // 选件会列表抛出的宣讲会id
 const outputTeachinId=(item:any):void=>{
-  dataBox.currentCompanyId=item.value;
+  data.currentCompanyId=item.value;
   componentBox.value=defineAsyncComponent(()=>import('./PCAbout.vue'));
 }
 
 </script>
 
 <style scoped>
+:root{
+    --el-text-color-primary:#fff;
+    --el-text-color-primary:#fff;
+}
 .pc{
   padding-top: 0.32rem;
   height: 100vh;
@@ -138,6 +201,9 @@ const outputTeachinId=(item:any):void=>{
 }
 @media screen and (min-width:1600px) {
   .pc-content{width: 7.6rem;}
+  .pc-content-nav{
+    width: 1.2rem !important;
+  }
 }
 
 .pc-content-nav{
@@ -164,7 +230,7 @@ const outputTeachinId=(item:any):void=>{
 .pc-school-list{
   color: #fff;
   justify-content: flex-start;
-  height: 0.25rem;
+  height: 0.2rem;
   padding: 0 0.06rem;
   margin-bottom: 3px;
   user-select: none;
@@ -178,7 +244,7 @@ const outputTeachinId=(item:any):void=>{
   text-overflow: ellipsis;
   /* background: rgba(255,255,255,0.08); */
   border-radius: 5px;
-  line-height: 0.25rem;
+  line-height: 0.2rem;
   padding: 0 0.012rem;
 }
 .pc-school-list>span:hover{
