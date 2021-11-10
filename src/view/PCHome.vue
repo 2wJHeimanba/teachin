@@ -38,7 +38,8 @@
               @outputPagination="outputPagination" 
               :teachinList="data.teachin_list" 
               :totalPages="data.totalPages" 
-              :loading="data.loading"
+              :loading="data.loading" 
+              :page="data.page"
             ></component>
           </transition>
         </el-scrollbar>
@@ -96,12 +97,10 @@ watch(()=>[data.currentAreaId,data.currentSchoolId],([newAreaId,newSchoolId],[ol
     }
   }
   if(newSchoolId!==oldSchoolId){
-    componentBox.value=defineAsyncComponent(()=>import('./PCList.vue'));
+    data.childComponetName="pc-list";
     requestData();
   }
 })
-
-
 
 
 onBeforeMount(() => {
@@ -117,6 +116,7 @@ onBeforeMount(() => {
   requestData();
 });
 
+// 获取宣讲会列表数据
 const requestData=():void=>{
   data.loading=true;
   let {currentSchoolId,currentAreaId,searchKye,date,page}=data;
@@ -127,38 +127,37 @@ const requestData=():void=>{
   })
 }
 
+// 获取地区学校列表数据
 const requestAreaSchools=():void=>{
   service.post(`/Index/GetSchoolList?areaPKID=${data.currentAreaId}`).then((res:any):void=>{
     data.school_list=res.Data;
   });
 }
 
+// 分页组件抛出来的数据
 const outputPagination=(e:number):void=>{
   data.page=e;
   requestData();
 }
 
+// 页面刷新
 window.addEventListener('beforeunload',function(){
   console.log("-------------------")
 });
 
 
-
-
-onMounted(()=>{
-  // console.warn("============",import.meta.env.MODE)
-  // console.log("PCHome页面加载",import.meta.env.VITE_APP_BASE_API)
-});
-
 // 选择学校
 const selectedSchool=(item:any):void=>{
   data.currentSchoolId=item.SchoolPKID;
+  data.childComponetName="pc-list";
 }
 
 // 选件会列表抛出的宣讲会id
 const outputTeachinId=(item:any):void=>{
+  // console.warn(item);
+  store.schoolId=item.value;
   data.currentCompanyId=item.value;
-  componentBox.value=defineAsyncComponent(()=>import('./PCAbout.vue'));
+  data.childComponetName="pc-about";
 }
 
 </script>

@@ -9,13 +9,13 @@
           <div class="pc-about-info">
             <div class="pc-company-name font-lb">
               <h2>{{data.company.name}}</h2>
-              <span>报名</span>
+              <span class="pc-about-btn i-flex"><el-button type="primary" plain size="mini">报名</el-button></span>
             </div>
             <div class="pc-about-teachin-info">
-              <div>来源高校：{{data.company.source_school}}</div>
-              <div>举办地点：{{data.company.host_place}}</div>
-              <div>宣讲时间：{{data.company.host_time}}</div>
-              <div>发布时间：{{data.company.publish_time}}</div>
+              <div class="no-wrap">来源高校：{{data.company.source_school}}</div>
+              <div class="no-wrap">举办地点：{{data.company.host_place}}</div>
+              <div class="no-wrap">宣讲时间：{{data.company.host_time}}</div>
+              <div class="no-wrap">发布时间：{{data.company.publish_time}}</div>
             </div>
           </div>
         </div>
@@ -30,15 +30,20 @@
                 </div>
               </el-tab-pane>
               <el-tab-pane label="公司其他宣讲" name="second">
-                <div class="pc-anthor-teachin-box">
-                  <ul v-for="(item,index) in data.company.teachin_list" :key="index" class="pc-anthor-teachin-ul">
-                    <li>{{item.ExSchName}}</li>
-                    <li>{{item.ExDate}}-{{item.ExTime}}</li>
-                    <li>{{item.ExSchName}}（{{item.ExSpaName}}）</li>
-                    <li>报名</li>
-                    <li>查看详情</li>
-                  </ul>
-                </div>
+                <template v-if="data.company.teachin_list.length!=0">
+                  <div class="pc-anthor-teachin-box">
+                    <ul v-for="(item,index) in data.company.teachin_list" :key="index" class="pc-anthor-teachin-ul">
+                      <li>{{item.ExSchName}}</li>
+                      <li>{{item.ExDate}}-{{item.ExTime}}</li>
+                      <li>{{item.ExSchName}} {{item.ExSpaName}}</li>
+                      <li><el-button type="primary" plain size="mini">报名</el-button></li>
+                      <li><el-button type="text" @click="showSingleDetail(item)">查看详情</el-button></li>
+                    </ul>
+                  </div>
+                </template>
+                <template v-else>
+                  <el-empty :image-size="80" description="暂无其他宣讲会"></el-empty>
+                </template>
               </el-tab-pane>
             </el-tabs>
         </div>
@@ -68,7 +73,8 @@
 
 <script setup lang="ts">
 import { ref,reactive,inject,onMounted,onBeforeMount } from "vue"
-import axios from "axios"
+// import axios from "axios"
+import service from "../http";
 
 const data=reactive({
   activeName:'first', 
@@ -95,8 +101,9 @@ const data=reactive({
 });
 
 onBeforeMount(()=>{
-  axios.get('/api/detail').then(res=>{
-    let {CMPIntroduction,CMPLogo,CMPName,ExAddTime,ExDate,ExList,ExPKID,ExSpaName,SchoolName}=res.data.data;
+  let school_id:any=inject('stateBox');
+  service.post(`/Detail/GetExecutiveDetail?expkid=${school_id.schoolId}`).then((res:any):void=>{
+    let {CMPIntroduction,CMPLogo,CMPName,ExAddTime,ExDate,ExList,ExPKID,ExSpaName,SchoolName}=res.Data;
     data.company.id=ExPKID,
     data.company.name=CMPName,
     data.company.logo=CMPLogo,
@@ -110,7 +117,6 @@ onBeforeMount(()=>{
 })
 
 onMounted(() => {
-  console.log(inject('stateBox'));
   changeCompanyLogoNum();
 });
 
@@ -124,7 +130,16 @@ const changeCompanyLogoNum=():void=>{
 }
 
 const handleClick=(tab:any, event:any):void=>{
-  console.log(tab, event)
+  // console.log(tab, event)
+}
+
+// 查看详情按钮
+const showSingleDetail=(item:any):void=>{
+  let {ExSchName,ExAddTime,ExDate,ExTime,ExPKID,ExSpaName}=item;
+  data.company.source_school=ExSchName;
+  data.company.host_place=ExSpaName;
+  data.company.host_time=ExDate+" "+ExTime;
+  data.company.publish_time=ExAddTime;
 }
 
 </script>
@@ -151,7 +166,7 @@ const handleClick=(tab:any, event:any):void=>{
 }
 .pc-header-mask{
   position: absolute;
-  background: #fff;
+  background: rgba(255,255,255,0.85);
   bottom: 0.1rem;
   left: 0.1rem;
   right: 0.1rem;
@@ -168,6 +183,7 @@ const handleClick=(tab:any, event:any):void=>{
 .pc-about-header-box>div{}
 .pc-about-logo{
   width: 1rem;
+  min-width: 1rem;
 }
 .pc-about-info{
   flex-grow: 1;
@@ -178,6 +194,14 @@ const handleClick=(tab:any, event:any):void=>{
   flex-grow: 1;
   padding-bottom: 0.05rem;
 }
+.pc-company-name>h2{
+  height: 0.18rem;
+  margin-right: 0.05rem;
+}
+.pc-company-name>span{
+  /* display: inline-flex; */
+  height: 0.18rem;
+}
 .pc-about-teachin-info{
   height: 0.43rem;
   display: flex;
@@ -187,14 +211,16 @@ const handleClick=(tab:any, event:any):void=>{
 .pc-about-teachin-info>div{
   width: 50%;
   height: 0.16rem;
+  line-height: 0.16rem;
   color: #000;
-  display: flex;
+  display: block;
   justify-content: flex-start;
   align-items: center;
 }
 .pc-company-info,
 .pc-anthor-teachin{
   padding: 0.07rem;
+  padding-bottom: 0;
   display: flex;
 }
 .pc-company-info>div,
@@ -210,7 +236,6 @@ const handleClick=(tab:any, event:any):void=>{
 .pc-company-info-content{
   padding: 0.05rem;
   padding-top: 0;
-  min-height: 1rem;
 }
 .pc-anthor-teachin-ul{
   display: flex;
@@ -220,8 +245,8 @@ const handleClick=(tab:any, event:any):void=>{
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  height: 0.2rem;
-  line-height: 0.2rem;
+  height: 0.28rem;
+  line-height: 0.28rem;
 }
 .pc-anthor-teachin-ul:not(:last-child){
   border-bottom: 1px solid rgba(255,255,255,0.25);

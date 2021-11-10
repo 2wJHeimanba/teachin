@@ -59,7 +59,36 @@
 .pc-about-right .el-affix{
     width: 100% !important;
 }
-
+.pc-anthor-teachin-ul>li .el-button--primary.is-plain,
 .pc-teacin-list .el-button--primary.is-plain{
     background: transparent;
+    
+}
+.pc-anthor-teachin-ul>li .el-button--primary.is-plain{
+    min-height: 0.127rem;
+    padding: 0 0.05rem;
+    line-height: normal;
+}
+
+.pc-empty-status{
+    height: 2rem;
+}
+
+.pc-anthor-teachin-ul>li .el-button.el-button--text{
+    padding: 0;
+    min-height: 0.13rem;
+}
+
+.no-wrap{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pc-about-btn .el-button.el-button--primary.el-button--mini.is-plain{
+    max-height: 0.15rem;
+    padding: 0.02rem 0.1rem;
+    background: transparent;
+    min-height: 0.1rem;
+    line-height: normal;
 }

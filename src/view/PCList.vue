@@ -19,32 +19,38 @@
       <div class="pc-list-content">
           <div class="pc-teachin-box">
               <div class="pc-teachin-title b-flex-align">全部宣讲会信息</div>
-              <div class="pc-teachin-list" 
-                v-loading="props.loading" 
-                element-loading-text="Loading..."
-                element-loading-background="rgba(0, 0, 0, 0.5)"
-              >
-                  <ul>
-                      <li>公司标题</li>
-                      <li>举办时间</li>
-                      <li>举办院校</li>
-                      <li>举办地点</li>
-                      <li>点击量</li>
-                      <li>操作</li>
-                      <li>报名</li>
-                  </ul>
-                  <ul v-for="(item,index) in props.teachinList" :key="index" class="pc-teacin-list">
-                      <li @click="toDetail(item)">{{item.ExCMPName}}</li>
-                      <li>{{item.ExDate}}</li>
-                      <li>{{item.ExSchName}}</li>
-                      <li>{{item.ExSpaName}}</li>
-                      <li>{{item.ExPageView}}</li>
-                      <li>投简历</li>
-                      <li><el-button type="primary" plain size="mini">报名</el-button></li>
-                  </ul>
-              </div>
+              <template v-if="props.teachinList.length!=0">
+                <div class="pc-teachin-list" 
+                    v-loading="props.loading" 
+                    element-loading-text="Loading..."
+                    element-loading-background="rgba(0, 0, 0, 0.5)"
+                >
+                    <ul>
+                        <li>公司标题</li>
+                        <li>举办时间</li>
+                        <li>举办院校</li>
+                        <li>举办地点</li>
+                        <li>点击量</li>
+                        <li>操作</li>
+                        <li>报名</li>
+                    </ul>
+                    <ul v-for="(item,index) in props.teachinList" :key="index" class="pc-teacin-list">
+                        <li @click="toDetail(item)">{{item.ExCMPName}}</li>
+                        <li>{{item.ExDate}}</li>
+                        <li>{{item.ExSchName}}</li>
+                        <li>{{item.ExSpaName}}</li>
+                        <li>{{item.ExPageView}}</li>
+                        <li>投简历</li>
+                        <li><el-button type="primary" plain size="mini">报名</el-button></li>
+                    </ul>
+                </div>
+              </template>
+              <template v-else>
+                  <el-empty description="暂无数据" :image-size="123" class="pc-empty-status"></el-empty>
+              </template>
+              
               <div class="pc-teachin-pagination b-flex-align">
-                  <el-pagination layout="prev, pager, next" :total="props.totalPages" @current-change="changePagination"></el-pagination>
+                  <el-pagination layout="prev, pager, next" :total="props.totalPages" :current-page="props.page" @current-change="changePagination"></el-pagination>
               </div>
           </div>
       </div>
@@ -63,7 +69,7 @@
 
 <script setup lang="ts">
 import QrCode from "../components/QrCode.vue"
-import {reactive,watch,onBeforeMount,defineEmits,ref,defineProps,onMounted} from "vue"
+import {reactive,defineEmits,ref,defineProps} from "vue"
 const data=reactive({
     name:"pc-list"
 });
@@ -71,16 +77,14 @@ const select_date=ref<string>('');
 const props=defineProps<{
     teachinList:any,
     totalPages:any,
-    loading:boolean
+    loading:boolean,
+    page:number
 }>();
-
-// onMounted(()=>{
-//     console.log(props.totalPages)
-// })
 
 // 接收父组件传来的数据
 const emit=defineEmits(['outputTeachinId','outputPagination']);
 
+// 点击宣讲会进入到详情页
 const toDetail=(item:any):void=>{
     emit('outputTeachinId',{value:item.ExPKID,label:item.ExCMPName});
 }
@@ -108,7 +112,6 @@ const changePagination=(val:any)=>{
     padding-left: 0.15rem;
     background:rgba(255,255,255,0.15);  
 }
-.pc-list-header>div{}
 .pc-search-left{
     flex-grow: 1;
     display: flex;
@@ -124,6 +127,7 @@ const changePagination=(val:any)=>{
     display: flex;
     justify-content: flex-start;
     align-items: flex-end;
+    margin-bottom: 0.04rem;
 }
 .pc-search-title>span{
     font-size: 0.06rem;
@@ -167,8 +171,6 @@ const changePagination=(val:any)=>{
 .pc-list-advertise{
     padding: 0.07rem;
 }
-.pc-list-content{}
-
 .pc-teachin-box{
     border: 1px solid rgba(255,255,255,0.35);
     border-radius: 8px;
@@ -188,7 +190,6 @@ const changePagination=(val:any)=>{
 }
 .pc-teachin-list{
     flex-grow: 1;
-    min-height: 1.5rem;
 }
 .pc-teachin-list>ul{
     display: flex;
