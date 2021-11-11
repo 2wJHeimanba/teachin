@@ -36,6 +36,8 @@
             <component :is="componentBox" 
               @outputTeachinId="outputTeachinId" 
               @outputPagination="outputPagination" 
+              @outputSearchKey="outputSearchKey" 
+              @outputDate="outputDate"
               :teachinList="data.teachin_list" 
               :totalPages="data.totalPages" 
               :loading="data.loading" 
@@ -50,10 +52,10 @@
 
 <script setup lang="ts">
 import PCHeader from "../components/PCHeader.vue"
-import { ref,reactive,onMounted,shallowRef,defineAsyncComponent,watch,onBeforeMount,provide } from "vue"
-import service from "../http"
+import { ref,reactive,onMounted,shallowRef,defineAsyncComponent,watch,onBeforeMount,provide,readonly } from "vue"
 import store from "../store"
 import {areaDataType} from "../tools/interface"
+import {requestTeachinList,requestAreaSchoolList,requestAreaList} from "../api/index"
 
 const data = reactive({
     childComponetName:"pc-list",
@@ -64,16 +66,19 @@ const data = reactive({
     currentSchoolId:'',
     currentCompanyId:'',
     currentAreaId:'473f08ee-5da7-4311-9031-b987e554fb41',
-    searchKye:'',
+    searchKey:'',
     date:'',
     page:1,
     totalPages:1
 });
 const componentBox=shallowRef(defineAsyncComponent(()=>import('./PCList.vue')));
 
-const dataBox=store;
+// const dataBox=store;
+const teachinId = reactive({
+  id:''
+})
 // 状态管理
-provide('stateBox',dataBox);
+provide('stateBox',readonly(teachinId));
 
 watch(()=>data.childComponetName,(newVal,oldVal)=>{
   let temporaryBox:any;
@@ -105,7 +110,7 @@ watch(()=>[data.currentAreaId,data.currentSchoolId],([newAreaId,newSchoolId],[ol
 
 onBeforeMount(() => {
   requestAreaSchools();
-  service.post('/Index/GetAreaList').then((res:any):void=>{
+  requestAreaList().then((res:any):void=>{
     data.area_list=res.Data.map((item:any):areaDataType=>{
       return {
         value:item.AreaPKID,
@@ -119,8 +124,8 @@ onBeforeMount(() => {
 // 获取宣讲会列表数据
 const requestData=():void=>{
   data.loading=true;
-  let {currentSchoolId,currentAreaId,searchKye,date,page}=data;
-  service.post(`/Index/GetExecutiveList?areaPKID=${currentAreaId}&schoolPKID=${currentSchoolId}&cmpName=${searchKye}&date=${date}&page=${page}&size=10`).then((res:any):void=>{
+  let {currentSchoolId,currentAreaId,searchKey,date,page}=data;
+  requestTeachinList({currentSchoolId,currentAreaId,searchKey,date,page}).then((res:any):void=>{
     data.loading=false;
     data.teachin_list=res.Data;
     data.totalPages=res.TotalCount;
@@ -129,22 +134,36 @@ const requestData=():void=>{
 
 // 获取地区学校列表数据
 const requestAreaSchools=():void=>{
-  service.post(`/Index/GetSchoolList?areaPKID=${data.currentAreaId}`).then((res:any):void=>{
+  requestAreaSchoolList(data.currentAreaId).then((res:any):void=>{
     data.school_list=res.Data;
-  });
+  })
 }
-
 // 分页组件抛出来的数据
 const outputPagination=(e:number):void=>{
   data.page=e;
   requestData();
+}
+// 搜索抛出来的关键字
+const outputSearchKey=(e:string):void=>{
+  data.searchKey=e;
+  if(data.currentSchoolId){
+    data.currentSchoolId=""
+  }else{
+    data.page=1;
+    requestData()
+  }
+}
+// 日期抛出的事件
+const outputDate=(e:string):void=>{
+  data.date=e;
+  data.page=1;
+  requestData()
 }
 
 // 页面刷新
 window.addEventListener('beforeunload',function(){
   console.log("-------------------")
 });
-
 
 // 选择学校
 const selectedSchool=(item:any):void=>{
@@ -154,8 +173,7 @@ const selectedSchool=(item:any):void=>{
 
 // 选件会列表抛出的宣讲会id
 const outputTeachinId=(item:any):void=>{
-  // console.warn(item);
-  store.schoolId=item.value;
+  teachinId.id=item.value;
   data.currentCompanyId=item.value;
   data.childComponetName="pc-about";
 }
@@ -182,7 +200,6 @@ const outputTeachinId=(item:any):void=>{
   top: 0;left: 0;
   background: #2b3d5e;
 }
-
 .pc-content{
   margin: 0 auto;
   display: flex;
@@ -193,18 +210,17 @@ const outputTeachinId=(item:any):void=>{
   .pc-content{width: 100%;}
 }
 @media screen and (min-width:1440px) {
-  .pc-content{width: 9rem;}
+  .pc-content{max-width: 9rem;}
   .pc-content-nav{
     width: 1.4rem !important;
   }
 }
 @media screen and (min-width:1600px) {
-  .pc-content{width: 7.6rem;}
+  .pc-content{max-width: 7.6rem;}
   .pc-content-nav{
     width: 1.2rem !important;
   }
 }
-
 .pc-content-nav{
   width: 1.5rem;
   display: flex;
@@ -259,6 +275,7 @@ const outputTeachinId=(item:any):void=>{
   flex-grow: 1;
   height: calc(100vh - 0.32rem);
   overflow-y: auto;
+  overflow-x: hidden;
 }
 .pc-content-test{
   width: 2rem;

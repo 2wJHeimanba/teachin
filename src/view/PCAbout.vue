@@ -64,7 +64,7 @@
         <div class="pc-company-logo">
           <div v-for="(item,index) in data.advertise" :key="index" class="b-flex">{{item.label}}</div>
         </div>
-        <div class="pc-about-advertise"></div>
+        <div class="pc-about-advertise">{{school_id}}</div>
       </el-affix>
     </div>
 
@@ -73,8 +73,7 @@
 
 <script setup lang="ts">
 import { ref,reactive,inject,onMounted,onBeforeMount } from "vue"
-// import axios from "axios"
-import service from "../http";
+import {requestTeachinDetail} from "../api/index"
 
 const data=reactive({
   activeName:'first', 
@@ -99,10 +98,9 @@ const data=reactive({
     {label:1,value:132}
   ]
 });
-
+let school_id:any=inject('stateBox');
 onBeforeMount(()=>{
-  let school_id:any=inject('stateBox');
-  service.post(`/Detail/GetExecutiveDetail?expkid=${school_id.schoolId}`).then((res:any):void=>{
+  requestTeachinDetail(school_id.id).then((res:any):void=>{
     let {CMPIntroduction,CMPLogo,CMPName,ExAddTime,ExDate,ExList,ExPKID,ExSpaName,SchoolName}=res.Data;
     data.company.id=ExPKID,
     data.company.name=CMPName,
@@ -120,6 +118,7 @@ onMounted(() => {
   changeCompanyLogoNum();
 });
 
+// 广告位补全
 const changeCompanyLogoNum=():void=>{
   let len=data.advertise.length%3;
   if(len!=0){
@@ -157,6 +156,7 @@ const showSingleDetail=(item:any):void=>{
   border: 1px solid rgba(255,255,255,0.15);;
 }
 .pc-about-left{
+  width: 3rem;
   flex-grow: 1;
 }
 .pc-about-header{
@@ -180,7 +180,6 @@ const showSingleDetail=(item:any):void=>{
   height: 0.75rem;
   display: flex;
 }
-.pc-about-header-box>div{}
 .pc-about-logo{
   width: 1rem;
   min-width: 1rem;
@@ -230,8 +229,6 @@ const showSingleDetail=(item:any):void=>{
   flex-grow: 1;
   overflow: hidden;
 }
-.pc-company-info-content{}
-.pc-anthor-teachin-box{}
 .pc-anthor-teachin-box,
 .pc-company-info-content{
   padding: 0.05rem;
@@ -258,7 +255,7 @@ const showSingleDetail=(item:any):void=>{
 .pc-anthor-teachin-ul>li:nth-child(5){flex: 1 1;text-align: center;}
 
 .pc-about-host-teachin{
-  height: 5rem;
+  height: 1rem;
   display: flex;
   padding: 0.07rem;
 }
@@ -286,7 +283,6 @@ const showSingleDetail=(item:any):void=>{
   border-radius: 5px;
   margin: 7px;
   background: rgba(255,255,255,0.15);
-  
 }
 
 </style>

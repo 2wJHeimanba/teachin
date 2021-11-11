@@ -7,9 +7,16 @@
                   <span>全国重点高校就业办官方“就业信息网”的全部宣讲会信息</span>
               </div>
               <div class="pc-search-ipt">
-                  <input type="text" class="no-border-outline" placeholder="输入关键词搜索">
-                  <!-- <el-date-picker v-model="select_date" type="date" placeholder="全部"></el-date-picker> -->
-                  <button class="no-border-outline">搜索宣讲会</button>
+                  <input type="text" class="no-border-outline" placeholder="输入关键词搜索" @keyup.enter="outputSearchKey" v-model="data.search_key">
+                  <el-date-picker
+                    v-model="data.select_date"
+                    type="date"
+                    placeholder="Pick a Date"
+                    format="YYYY/MM/DD"
+                    value-format="YYYY-MM-DD"
+                  >
+                  </el-date-picker>
+                  <button class="no-border-outline" @click="outputSearchKey">搜索宣讲会</button>
               </div>
           </div>
           <div class="pc-search-right b-flex">
@@ -69,11 +76,13 @@
 
 <script setup lang="ts">
 import QrCode from "../components/QrCode.vue"
-import {reactive,defineEmits,ref,defineProps} from "vue"
+import {reactive,defineEmits,defineProps,watch} from "vue"
 const data=reactive({
-    name:"pc-list"
+    name:"pc-list",
+    select_date:'',
+    search_key:'',
+    box:[]
 });
-const select_date=ref<string>('');
 const props=defineProps<{
     teachinList:any,
     totalPages:any,
@@ -81,14 +90,22 @@ const props=defineProps<{
     page:number
 }>();
 
-// 接收父组件传来的数据
-const emit=defineEmits(['outputTeachinId','outputPagination']);
 
+
+// 接收父组件传来的数据
+const emit=defineEmits(['outputTeachinId','outputPagination','outputSearchKey','outputDate']);
+// 监听日期变化抛出数据
+watch(()=>data.select_date,(newVal,oldVal)=>{
+    emit('outputDate',newVal)
+})
+// 搜索关键字
+const outputSearchKey=():void=>{
+    emit('outputSearchKey',data.search_key)
+}
 // 点击宣讲会进入到详情页
 const toDetail=(item:any):void=>{
     emit('outputTeachinId',{value:item.ExPKID,label:item.ExCMPName});
 }
-
 // 分页数改变
 const changePagination=(val:any)=>{
     emit('outputPagination',val)
